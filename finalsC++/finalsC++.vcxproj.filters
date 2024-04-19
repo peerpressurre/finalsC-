@@ -10,4 +10,7 @@
       <Filter>main</Filter>
     </ClCompile>
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="wallets.txt" />
+  </ItemGroup>
 </Project>
