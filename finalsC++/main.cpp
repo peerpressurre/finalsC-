@@ -9,26 +9,23 @@ using namespace std;
 
 
 
-string secretWord;
-
+string hiddenWord;
 vector<char> guessedLetters;
 
-// Функція для виведення статистики гри
-void printGameStats(time_t startTime, int attempts) {
-    cout << "Гра завершена!" << endl;
-    cout << "Час гри: " << difftime(time(NULL), startTime) << " секунд" << endl;
-    cout << "Кількість спроб: " << attempts << endl;
-    cout << "Шукане слово: " << secretWord << endl;
-    cout << "Літери гравця: ";
+void GameOverPrint(time_t startTime, int attempts) {
+    cout << "Game Over" << endl;
+    cout << "Time spent: " << difftime(time(NULL), startTime) << " sec" << endl;
+    cout << "Tries: " << attempts << endl;
+    cout << "Hidden word: " << hiddenWord << endl;
+    cout << "Your letters: ";
     for (char letter : guessedLetters) {
         cout << letter << " ";
     }
     cout << endl;
 }
 
-// Функція для виведення стану слова (з відкритими і прихованими літерами)
-void printWordState() {
-    for (char letter : secretWord) {
+void printWord() {
+    for (char letter : hiddenWord) {
         if (find(guessedLetters.begin(), guessedLetters.end(), letter) != guessedLetters.end()) {
             cout << letter << " ";
         }
@@ -39,9 +36,8 @@ void printWordState() {
     cout << endl;
 }
 
-// Функція для вибору випадкового слова
-string chooseRandomWord() {
-    vector<string> words = { "шибаниця", "автомобіль", "програмування", "вазон", "помідор" };
+string WordsRandom() {
+    vector<string> words = { "kettle", "phone", "medicine", "house", "lighter", "computer", "water", "cruise"};
     srand(time(NULL));
     return words[rand() % words.size()];
 }
@@ -49,43 +45,39 @@ string chooseRandomWord() {
 int main() {
     SetConsoleCP(1251);
     SetConsoleOutputCP(1251);
-    //setlocale(LC_CTYPE, "ukr");
-    secretWord = chooseRandomWord();
+    hiddenWord = WordsRandom();
     int attempts = 0;
     time_t startTime = time(NULL);
 
     while (true) {
-        cout << "Слово: ";
-        printWordState();
+        cout << "Word: ";
+        printWord();
 
-        // Перевірка чи слово вже вгадане
-        if (find_if(secretWord.begin(), secretWord.end(), [&](char letter) {
+        if (find_if(hiddenWord.begin(), hiddenWord.end(), [&](char letter) {
             return find(guessedLetters.begin(), guessedLetters.end(), letter) == guessedLetters.end();
-            }) == secretWord.end()) {
-            cout << "Ви виграли!" << endl;
-            printGameStats(startTime, attempts);
+            }) == hiddenWord.end()) {
+            cout << "You win!" << endl;
+            GameOverPrint(startTime, attempts);
             break;
         }
 
-        // Введення літери від гравця
-        cout << "Введіть літеру: ";
+        cout << "Guess a letter: ";
         char guess;
         cin >> guess;
 
-        // Перевірка чи була вже введена ця літера
         if (find(guessedLetters.begin(), guessedLetters.end(), guess) != guessedLetters.end()) {
-            cout << "Ви вже вводили цю літеру. Спробуйте ще раз." << endl;
+            cout << "Already attempted letter, try again" << endl;
             continue;
         }
 
         guessedLetters.push_back(guess);
 
         // Перевірка чи літера є в загаданому слові
-        if (secretWord.find(guess) != string::npos) {
-            cout << "Ви вгадали літеру!" << endl;
+        if (hiddenWord.find(guess) != string::npos) {
+            cout << "Right letter!" << endl;
         }
         else {
-            cout << "Ця літера не є частиною слова." << endl;
+            cout << "Wrong letter" << endl;
             attempts++;
         }
     }
