@@ -47,11 +47,54 @@ public:
     }
 };
 
+class FileManager {
+public:
+    static bool fileExists(const std::string& filename) {
+        std::ifstream file(filename);
+        return file.good();
+    }
+
+    static void createWalletFile( std::string& walletName,  Wallet& wallet) {
+        std::ofstream file(walletName + ".txt");
+        if (file.is_open()) {
+            file << "Wallet Name: " << wallet.getName() << "\n\n";
+            for (auto& card : wallet.getCards()) {
+                file << "Card Number: " << card.getNumber() << "\n";
+                file << "Holder Name: " << card.getName() << "\n";
+                file << "Balance: " << card.getBalance() << "\n";
+                file << "Transactions:\n";
+                for (auto& transactionPair : card.getTransactions()) {
+                    auto& category = transactionPair.first;
+                    auto& transactions = transactionPair.second;
+
+                    file << category << ":\n";
+
+                    for (auto& transaction : transactions) {
+                        file << "- " << transaction.getAmount() << "$ " << transaction.getDate() << "\n";
+                    }
+                }
+                file << "\n";
+            }
+        }
+        else {
+            cout << "Failed to create wallet: " << walletName << endl;
+        }
+    }
+};
+
+
 class Wallet {
     string holderName;
     vector<Card> cards;
 public:
     Wallet(vector<Card> cardss) : cards(cardss) {};
+    string getName() {
+        return holderName;
+    }
+
+    vector<Card>& getCards() {
+        return cards;
+    }
 };
 
 class Card {
