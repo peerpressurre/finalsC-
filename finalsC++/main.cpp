@@ -4,16 +4,43 @@
 #include <string>
 #include <vector>
 #include <Windows.h>
+#include <fstream>
+#include <cctype>
 
 using namespace std;
 
-
-
 string hiddenWord;
 vector<char> guessedLetters;
+string alphabet = "abcdefghijklmnopqrstuvwxyz";
+
 
 string WordsRandom() {
-    vector<string> words = { "kettle", "phone", "medicine", "house", "lighter", "computer", "water", "cruise"};
+    ifstream file("words.txt");
+    vector<string> words;
+    string word;
+    if (file.is_open()) {
+        while (getline(file, word)) {
+            for (char& letter : word) {
+
+                if (isalpha(letter)) {
+                    int index = alphabet.find(tolower(letter));
+                    if (index != string::npos) {
+                        index -= 3;
+                        if (index < 0)
+                        {
+                            index = alphabet.size() + index;
+                        }
+                        letter = alphabet[index];
+                    }
+                }
+            }
+            words.push_back(word);
+        }
+        file.close();
+    }
+    else {
+        cout << "Failed to open file" << endl;
+    }
     srand(time(NULL));
     return words[rand() % words.size()];
 }
@@ -43,13 +70,18 @@ void GameOverPrint(time_t startTime, int attempts) {
 }
 
 int main() {
-    SetConsoleCP(1251);
-    SetConsoleOutputCP(1251);
     hiddenWord = WordsRandom();
     int attempts = 0;
     time_t startTime = time(NULL);
-
-    while (true) {
+    bool loop = true;
+    while (loop) {
+        if (attempts >= 10)
+        {
+            loop = false;
+            cout << "Ran out of attempts" << endl;
+            GameOverPrint(startTime, attempts);
+            break;
+        }
         cout << "Word: ";
         printWord();
 
@@ -72,7 +104,6 @@ int main() {
 
         guessedLetters.push_back(guess);
 
-        // Ïåðåâ³ðêà ÷è ë³òåðà º â çàãàäàíîìó ñëîâ³
         if (hiddenWord.find(guess) != string::npos) {
             cout << "Right letter!" << endl;
         }
