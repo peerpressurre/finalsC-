@@ -1,0 +1,7 @@
+Wallet Name: wallet1
+
+Card Number: 6767676767676767
+Holder Name: name surname
+Balance: 6575
+Transactions:
+
