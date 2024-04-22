@@ -12,16 +12,10 @@ using namespace std;
 string hiddenWord;
 vector<char> guessedLetters;
 
-void GameOverPrint(time_t startTime, int attempts) {
-    cout << "Game Over" << endl;
-    cout << "Time spent: " << difftime(time(NULL), startTime) << " sec" << endl;
-    cout << "Tries: " << attempts << endl;
-    cout << "Hidden word: " << hiddenWord << endl;
-    cout << "Your letters: ";
-    for (char letter : guessedLetters) {
-        cout << letter << " ";
-    }
-    cout << endl;
+string WordsRandom() {
+    vector<string> words = { "kettle", "phone", "medicine", "house", "lighter", "computer", "water", "cruise"};
+    srand(time(NULL));
+    return words[rand() % words.size()];
 }
 
 void printWord() {
@@ -36,10 +30,16 @@ void printWord() {
     cout << endl;
 }
 
-string WordsRandom() {
-    vector<string> words = { "kettle", "phone", "medicine", "house", "lighter", "computer", "water", "cruise"};
-    srand(time(NULL));
-    return words[rand() % words.size()];
+void GameOverPrint(time_t startTime, int attempts) {
+    cout << "Game Over" << endl;
+    cout << "Time spent: " << difftime(time(NULL), startTime) << " sec" << endl;
+    cout << "Tries: " << attempts << endl;
+    cout << "Hidden word: " << hiddenWord << endl;
+    cout << "Your letters: ";
+    for (char letter : guessedLetters) {
+        cout << letter << " ";
+    }
+    cout << endl;
 }
 
 int main() {
@@ -72,7 +72,7 @@ int main() {
 
         guessedLetters.push_back(guess);
 
-        // Ïåðåâ³ðêà ÷è ë³òåðà º â çàãàäàíîìó ñëîâ³
+        // ÃÃ¥Ã°Ã¥Ã¢Â³Ã°ÃªÃ  Ã·Ã¨ Ã«Â³Ã²Ã¥Ã°Ã  Âº Ã¢ Ã§Ã Ã£Ã Ã¤Ã Ã­Ã®Ã¬Ã³ Ã±Ã«Ã®Ã¢Â³
         if (hiddenWord.find(guess) != string::npos) {
             cout << "Right letter!" << endl;
         }
