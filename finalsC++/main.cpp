@@ -278,7 +278,7 @@ public:
                     string rest = line.substr(line.find(":") + 1);
                     double amount = stod(rest.substr(1, rest.find("$") - 2));
                     string date = rest.substr(rest.find("$") + 2);
-                    card.withdraw(category, Transaction(category, amount, date));
+                    //card.withdraw(category, Transaction(category, amount, date));
                 }
 
                 wallet.addCard(card);
