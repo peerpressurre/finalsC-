@@ -4,4 +4,7 @@ Card Number: 6767676767676767
 Holder Name: name surname
 Balance: 6575
 Transactions:
+-500 groceries 12.05.2024
+-700 clothes, 13.05.2024
+
 

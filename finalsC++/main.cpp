@@ -133,8 +133,10 @@ class Card {
     string holderName;
     double balance;
     map<string, vector<Transaction>> transactions;
+    string owningWallet;
+    FileMAnager fileManager;
 public:
-    Card(string num, string name, double bal) : number(num), holderName(name), balance(bal) {}
+    Card(string num, string name, double bal, FileMAnager fm)  : number(num), holderName(name), balance(bal), fileManager(fm) {}
     string getNumber() {
         return number;
     }
@@ -151,17 +153,12 @@ public:
         if (balance >= amount) {
             balance -= amount;
             transactions[category].push_back(Transaction(category, amount, transactionDate));
-            fstream file;
-            file.open(walletName, ios::app);
-            if (file.is_open())
-            {
-
-            }
         }
         else {
             cout << "Insufficient funds!" << endl;
         }
     }
+
     void deposit(double amount) {
         balance += amount;
 
@@ -227,7 +224,7 @@ public:
         }
     }
 
-    static void listWalletInfo(const string& walletName) {
+    static void listWalletInfo(string& walletName) {
         fstream file;
         file.open(walletName + ".txt", ios::in);
         cout << walletName << endl;
@@ -253,11 +250,76 @@ public:
         }
     }
 
+    static void writeTransactionInfo(string& walletName, map<string, vector<Transaction>> transactions, double newamount) {
+        fstream file;
+        file.open(walletName + ".txt", ios::app);
+        if (!file.is_open()) {
+            cout << "Failed to open wallet file: " << walletName + ".txt" << endl;
+            return;
+        }
+
+        string line;
+        while (getline(file, line))
+        {
+            if (line.find("Transactions") != string::npos)
+            {
+                for (auto& pair : transactions)
+                {
+                    for (size_t i = 0; i < pair.second.size(); i++)
+                    {
+                        file << pair.second[i].getAmount() << "$ " << pair.second[i].getCategory() << " " << pair.second[i].getDate() << endl;
+                    }
+                }
+            }
+        }
+        updateBalance(walletName, newamount);
+    }
+
+    Wallet& fillWallet(string walletName) {
+        fstream file;
+        file.open(walletName, ios::in);
+        if (!file.is_open()) {
+            cout << "Failed to open wallet file: " << walletName + ".txt" << endl;
+            return;
+        }
+    }
+    static void updateBalance(string& walletName, double newamount) {
+        fstream inFile;
+        inFile.open(walletName + ".txt", ios::in);
+        if (!inFile.is_open()) {
+            cout << "Failed to open wallet file: " << walletName + ".txt" << endl;
+            return;
+        }
+
+        vector<string> lines;
+        string line;
+        while (getline(inFile, line)) {
+            lines.push_back(line);
+        }
+        inFile.close();
+
+        fstream outFile(walletName + ".txt");
+        if (!outFile.is_open()) {
+            cout << "Failed to open wallet file for writing: " << walletName + ".txt" << endl;
+            return;
+        }
+
+        for (size_t i = 0; i < lines.size(); i++) {
+            if (lines[i].find("Balance") != string::npos) {
+                outFile << "Balance: " << newBalance << endl;
+            }
+            else {
+                outFile << lines[i] << endl;
+            }
+        }
+        outFile.close();
+    }
+
     static void FillInfoFromFile(const string& walletName, Wallet& wallet) {
         fstream file;
         file.open(walletName + ".txt", ios::in);
         if (!file.is_open()) {
-            cerr << "Failed to open wallet file: " << walletName + ".txt" << endl;
+            cout << "Failed to open wallet file: " << walletName + ".txt" << endl;
             return;
         }
 
@@ -272,13 +334,18 @@ public:
 
                 Card card(cardNumber, holderName, balance);
 
-                while (getline(file, line) && line.find("Transactions") == string::npos) {
-                    if (line.empty()) continue;
-                    string category = line.substr(0, line.find(":"));
-                    string rest = line.substr(line.find(":") + 1);
-                    double amount = stod(rest.substr(1, rest.find("$") - 2));
-                    string date = rest.substr(rest.find("$") + 2);
-                    //card.withdraw(category, Transaction(category, amount, date));
+                while (getline(file, line)) {
+                    if (line.find("Transactions:") != string::npos) {
+                        while (getline(file, line) && !line.empty()) {
+                            size_t pos = line.find("$");
+                            double amount = stod(line.substr(0, pos)); 
+                            size_t pos2 = line.find(" ", pos + 1); 
+                            string category = line.substr(pos + 1, pos2 - pos - 1);
+                            string date = line.substr(pos2 + 1);
+
+                            card.withdraw(category, amount, date, walletName); // Invoke withdraw function with extracted data
+                        }
+                    }
                 }
 
                 wallet.addCard(card);
