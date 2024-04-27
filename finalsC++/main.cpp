@@ -134,7 +134,7 @@ class Card;
 class FileManager {
 public:
     static bool fileExists(const string& filename);
-    static void createWalletFile(string& walletName, Wallet& wallet);
+    static void writeWalletFile(string& walletName, Wallet& wallet);
     static void listWalletInfo(string& walletName);
     static void writeTransactionInfo(string& walletName, map<string, vector<Transaction>> transactions, double newamount);
     static void updateBalance(string& walletName, double newamount);
@@ -169,6 +169,8 @@ public:
     Wallet(string name, vector<Card> cardss);
     string getName();
     vector<Card>& getCards();
+    void setName(string name);
+    void setCards(vector<Card>);
     void addCard(Card& card);
     void printMenu();
     void printCards();
@@ -181,9 +183,9 @@ bool FileManager::fileExists(const string& filename) {
     return file.good();
 }
 
-void FileManager::createWalletFile(string& walletName, Wallet& wallet) {
+void FileManager::writeWalletFile(string& walletName, Wallet& wallet) {
     fstream file;
-    file.open(walletName + ".txt", ios::app);
+    file.open(walletName + ".txt", ios::out);
     if (file.is_open()) {
         file << "Wallet Name: " << wallet.getName() << "\n\n";
         for (auto& card : wallet.getCards()) {
@@ -259,6 +261,38 @@ void FileManager::writeTransactionInfo(string& walletName, map<string, vector<Tr
         }
         updateBalance(walletName, newamount);
 }
+
+/*void FileManager::updateBalance(string& walletName, double newamount) {
+    fstream inFile;
+    inFile.open(walletName + ".txt", ios::in);
+    if (!inFile.is_open()) {
+        cout << "Failed to open wallet file: " << walletName + ".txt" << endl;
+        return;
+    }
+
+    vector<string> lines;
+    string line;
+    while (getline(inFile, line)) {
+        lines.push_back(line);
+    }
+    inFile.close();
+
+    fstream outFile(walletName + ".txt");
+    if (!outFile.is_open()) {
+        cout << "Failed to open wallet file for writing: " << walletName + ".txt" << endl;
+        return;
+    }
+
+    for (size_t i = 0; i < lines.size(); i++) {
+        if (lines[i].find("Balance") != string::npos) {
+            outFile << "Balance: " << newamount << endl;
+        }
+        else {
+            outFile << lines[i] << endl;
+        }
+    }
+    outFile.close();
+}*/
 
 void FileManager::updateBalance(string& walletName, double newamount) {
     fstream inFile;
@@ -382,6 +416,39 @@ vector<Card>& Wallet::getCards() {
     return cards;
 }
 
+void Wallet::setName(string name) {
+    holderName = name;
+}
+
+void Wallet::setCards(vector<Card> cards) {
+    cards = cards;
+}
+
+Card addCardPrint() {
+    bool exitLoop = true;
+    string number;
+    string holderName;
+    double balance;
+    while (true)
+    {
+        cout << "Enter card number (16 digits) -> ";
+        getline(cin, number);
+        number.erase(remove_if(number.begin(), number.end(), std::isspace), number.end());
+        if (number.size() != 16) {
+            cout << "!Card number must consist of 16 digits" << endl;
+        }
+        else {
+            exitLoop = false;
+            break;
+        }
+    }
+    cout << "Enter card holder name -> ";
+    getline(cin, holderName);
+    cout << "Enter current balance -> ";
+    cin >> balance;
+    Card card(number, holderName, balance);
+    return card;
+}
 void Wallet::addCard(Card& card) {
     cards.push_back(card);
 }
@@ -393,11 +460,18 @@ void Wallet::printMenu() {
 }
 
 void Wallet::printCards() {
-    cout << "Your cards:" << endl;
-    for (size_t i = 0; i < cards.size(); i++)
+    if (cards.empty())
     {
-        cout << i << " - " << cards[i].getNumber() << endl;
+        cout << "There are no cards in this wallet" << endl;
     }
+    else
+    {
+        cout << "Your cards:" << endl;
+        for (size_t i = 0; i < cards.size(); i++)
+        {
+            cout << i++ << " - " << cards[i].getNumber() << endl;
+        }
+    }  
 }
 
 // Static member initialization
@@ -408,6 +482,8 @@ FileManager Wallet::fileManager;
 int main() {
     string walletName;
     FileManager fm;
+    Wallet wallet;
+    Card card;
     cout << "Enter the name of your wallet: ";
     getline(std::cin, walletName);
     vector<Card> cards;
@@ -417,56 +493,38 @@ int main() {
         cout << "Enter wallet holder name -> ";
         string wholderName;
         getline(cin, wholderName);
-        Wallet wallet(wholderName, cards);
+        wallet.setName(wholderName);
+        wallet.setCards(cards);
         cout << "name: " << walletName << endl;
-        bool exitLoop = true;
+        
         char ans;
         int counter = 0;
-        while (exitLoop)
+        cout << "Add card? y/n -> ";
+        cin >> ans;
+        cin.ignore();
+        if (ans == 'y')
         {
-            cout << "Add card? y/n -> ";
-            cin >> ans;
-            cin.ignore();
-            if (ans == 'y')
-            {
-                string number;
-                string holderName;
-                double balance;
-                while (true)
-                {
-                    cout << "Enter card number (16 digits) -> ";
-                    getline(cin, number);
-                    number.erase(remove_if(number.begin(), number.end(), std::isspace), number.end());
-                    if (number.size() != 16) {
-                        cout << "!Card number must consist of 16 digits" << endl;
-                    }
-                    else {
-                        exitLoop = false;
-                        break;
-                    }
-                }
-                cout << "Enter card holder name -> ";
-                getline(cin, holderName);
-                cout << "Enter current balance -> ";
-                cin >> balance;
-                Card card(number, holderName, balance);
-                cards.push_back(card);
-                
-            }
-        }  
-        FileManager::createWalletFile(walletName, wallet);
+            card = addCardPrint();
+            cards.push_back(card);
+
+        }
+        FileManager::writeWalletFile(walletName, wallet);
     }
     else {
-        Wallet wallet;
+        
         int choice;
         fm.FillInfoFromFile(walletName, wallet);
         fm.listWalletInfo(walletName);
+    }
+    while (true)
+    {
         wallet.printMenu();
         cout << "-> ";
         cin >> choice;
         switch (choice) {
         case 1:
-            cout << "You chose Option 1" << endl;
+            card = addCardPrint();
+            wallet.getCards().push_back(card);
             break;
         case 2:
             cout << "You chose Option 2" << endl;
@@ -474,10 +532,13 @@ int main() {
         case 3:
             wallet.printCards();
             break;
+        default:
+            cout << "Invalid choice!" << endl;
+            break;
         }
     }
    
-
+    FileManager::writeWalletFile(walletName, wallet);
   
     return 0;
 }

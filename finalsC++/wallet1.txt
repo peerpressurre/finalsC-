@@ -1,0 +1,15 @@
+Wallet Name: wallet1
+
+Card Number: 6767676767676767
+Holder Name: name surname
+Balance: 6575
+Transactions:
+-500 groceries 12.05.2024
+-700 clothes, 13.05.2024
+
+Card Number: 5656565656565656
+Holder Name: name1 surname2
+Balance: 10000
+Transactions:
+-250 groceries 18.05.2024
+-1500 clothes, 21.05.2024
