@@ -138,7 +138,7 @@ public:
     static void listWalletInfo(string& walletName);
     static void writeTransactionInfo(string& walletName, map<string, vector<Transaction>> transactions, double newamount);
     static void updateBalance(string& walletName, double newamount);
-    static void FillInfoFromFile(string& walletName, Wallet& wallet);
+    static void FillInfoFromFile(string walletName, Wallet& wallet);
 };
 
 class Card {
@@ -149,6 +149,7 @@ class Card {
     string owningWallet;
 public:
     static FileManager fileManager;
+    Card() : number(""), holderName(""), balance(0.0) {};\
     Card(string num, string name, double bal);
     string getNumber();
     string getName();
@@ -164,6 +165,7 @@ class Wallet {
     vector<Card> cards;
 public:
     static FileManager fileManager;
+    Wallet() : holderName("") {};
     Wallet(string name, vector<Card> cardss);
     string getName();
     vector<Card>& getCards();
@@ -290,7 +292,7 @@ void FileManager::updateBalance(string& walletName, double newamount) {
     outFile.close();
 }
 
-void FileManager::FillInfoFromFile(string& walletName, Wallet& wallet) {
+void FileManager::FillInfoFromFile(string walletName, Wallet& wallet) {
     fstream file;
     file.open(walletName + ".txt", ios::in);
     if (!file.is_open()) {
@@ -387,11 +389,15 @@ void Wallet::addCard(Card& card) {
 void Wallet::printMenu() {
     cout << "1 - Add card" << endl;
     cout << "2 - Remove card" << endl;
-    cout << "3 - View card";
+    cout << "3 - View card" << endl;
 }
 
 void Wallet::printCards() {
-    // Implementation
+    cout << "Your cards:" << endl;
+    for (size_t i = 0; i < cards.size(); i++)
+    {
+        cout << i++ << " - " << cards[i].getNumber() << endl;
+    }
 }
 
 // Static member initialization
@@ -448,14 +454,27 @@ int main() {
                 
             }
         }  
-        Wallet wallet(walletName, cards);
         FileManager::createWalletFile(walletName, wallet);
     }
     else {
-        fm.FillInfoFromFile(walletName, Wallet& wallet);
+        Wallet wallet;
+        int choice;
+        fm.FillInfoFromFile(walletName, wallet);
         fm.listWalletInfo(walletName);
         wallet.printMenu();
-        
+        cout << "-> ";
+        cin >> choice;
+        switch (choice) {
+        case 1:
+            cout << "You chose Option 1" << endl;
+            break;
+        case 2:
+            cout << "You chose Option 2" << endl;
+            break;
+        case 3:
+            wallet.printCards();
+            break;
+        }
     }
 
   

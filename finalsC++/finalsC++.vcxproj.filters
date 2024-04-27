@@ -11,6 +11,8 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <Text Include="wallets.txt" />
+    <Text Include="..\..\..\..\Downloads\wallet1.txt">
+      <Filter>main</Filter>
+    </Text>
   </ItemGroup>
 </Project>
