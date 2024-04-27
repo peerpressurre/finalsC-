@@ -396,7 +396,7 @@ void Wallet::printCards() {
     cout << "Your cards:" << endl;
     for (size_t i = 0; i < cards.size(); i++)
     {
-        cout << i++ << " - " << cards[i].getNumber() << endl;
+        cout << i << " - " << cards[i].getNumber() << endl;
     }
 }
 
