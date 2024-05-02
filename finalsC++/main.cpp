@@ -183,6 +183,7 @@ public:
     void printCards();
     void printCardInfo(int index);
     Card getCardByIndex(int index);
+    void printInfo(string walletname);
 };
 
 
@@ -489,6 +490,18 @@ void Wallet::printCardInfo(int index) {
     }
 }
 
+void Wallet::printInfo(string walletname) {
+    cout << walletname << endl;
+    for (size_t i = 0; i < cards.size(); i++)
+    {
+        cout << "Number: " << cards[i].getNumber() << endl;
+        cout << "Owner name: " << cards[i].getName() << endl;
+        cout << "Balance: " << cards[i].getBalance() << endl;
+        cout << endl;
+    }
+
+}
+
 Card Wallet::getCardByIndex(int index) {
     return cards[index - 1];
 }
@@ -546,7 +559,7 @@ int main() {
 
         Sleep(1000);
         system("cls");
-        fm.listWalletInfo(walletName);
+        wallet.printInfo(walletName);
         wallet.printMenu();
         cout << "-> ";
         cin >> choice;
@@ -556,6 +569,8 @@ int main() {
             system("cls");
             card = addCardPrint();
             wallet.getCards().push_back(card);
+            cout << "Card added successfully!" << endl;
+            system("pause");
             break;
         case 2:
             cout << "You chose Option 2" << endl;
