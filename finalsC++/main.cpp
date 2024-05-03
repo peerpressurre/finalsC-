@@ -215,6 +215,7 @@ void FileManager::writeWalletFile(string& walletName, Wallet& wallet) {
             }
             file << "\n";
         }
+        file.close();
     }
     else {
         cout << "Failed to create a wallet: " << walletName << endl;
@@ -270,6 +271,7 @@ void FileManager::writeTransactionInfo(string& walletName, map<string, vector<Tr
             }
         }
         updateBalance(walletName, newamount);
+        file.close();
 }
 
 void FileManager::updateBalance(string& walletName, double newamount) {
@@ -380,14 +382,14 @@ void Card::withdraw(string category, double amount, string transactionDate) {
 
 void Card::deposit(string walletName, double amount) {
     balance += amount;
-    fileManager.updateBalance(walletName, balance);
+    //fileManager.updateBalance(walletName, balance);
 }
 
 void Card::printMenu() {
     cout << "Actions: " << endl;
     cout << "1 - Card top-up" << endl;
     cout << "2 - Make a transaction" << endl;
-    cout << "3 - Exit " << endl;
+    cout << "0 - Exit " << endl;
 }
 
 void Card::printInfo() {
@@ -453,6 +455,7 @@ Card addCardPrint() {
 
 void Wallet::addCard(Card& card) {
     cards.push_back(card);
+    FileManager::writeWalletFile(holderName, *this);
 }
 
 void Wallet::printMenu() {
@@ -460,7 +463,7 @@ void Wallet::printMenu() {
     cout << "1 - Add card" << endl;
     cout << "2 - Remove card" << endl;
     cout << "3 - Pick a card" << endl;
-    cout << "4 - Exit " << endl;
+    cout << "0 - Exit " << endl;
 }
 
 void Wallet::printCards() {
@@ -483,6 +486,7 @@ void Wallet::printCardInfo(int index) {
     if (cards.empty())
     {
         cout << "There are no cards in this wallet" << endl;
+        return;
     }
     else
     {
@@ -539,7 +543,7 @@ int main() {
         if (ans == 'y')
         {
             card = addCardPrint();
-            cards.push_back(card);
+            wallet.getCards().push_back(card);
 
         }
         FileManager::writeWalletFile(walletName, wallet);
@@ -579,8 +583,13 @@ int main() {
             Sleep(1500);
             system("cls");
             wallet.printCards();
+            cout << "0 - Exit" << endl;
             cout << "-> ";
             cin >> cardchoice; 
+            if (cardchoice == 0)
+            {
+                goto outer_loop;
+            }
             Sleep(1500);
             system("cls");
             //wallet.getCardByIndex(cardchoice).printInfo();
@@ -609,7 +618,7 @@ int main() {
                     wallet.getCardByIndex(cardchoice).withdraw(category, amount, strDate);
                     cout << "Successfull operation!" << endl;
                     break;
-                case 3:
+                case 0:
                     goto outer_loop;
                     system("cls");
                     break;
@@ -622,7 +631,7 @@ int main() {
             }
             system("cls"); 
             break;
-        case 4:
+        case 0:
             exit(0);
             break;
         default:
