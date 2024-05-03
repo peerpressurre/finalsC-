@@ -274,7 +274,7 @@ void FileManager::writeTransactionInfo(string& walletName, map<string, vector<Tr
         file.close();
 }
 
-void FileManager::updateBalance(string& walletName, double newamount) {
+void FileManager::updateBalance(string& walletName, double newamount, string cardnum) {
     fstream inFile;
     inFile.open(walletName + ".txt", ios::in);
     if (!inFile.is_open()) {
@@ -296,13 +296,17 @@ void FileManager::updateBalance(string& walletName, double newamount) {
     }
 
     for (size_t i = 0; i < lines.size(); i++) {
-        if (lines[i].find("Balance") != string::npos) {
-            outFile << "Balance: " << newamount << endl;
+        if (lines[i].find(cardNum) != string::npos) {
+            if (lines[i].find("Balance") != string::npos) {
+                size_t colonPos = lines[i].find(":", balancePos);
+                if (colonPos != string::npos) {
+                    string balanceStr = lines[i].substr(colonPos + 1);
+                    //double balance = stod(balanceStr);
+                    //balance = newAmount;
+                    lines[i] = lines[i].substr(0, colonPos + 1) + to_string(newAmount);
+                }
+            }
         }
-        else {
-            outFile << lines[i] << endl;
-        }
-    }
     outFile.close();
 }
 
