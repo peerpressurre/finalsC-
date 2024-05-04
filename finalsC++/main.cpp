@@ -141,7 +141,7 @@ public:
     static void writeWalletFile(string& walletName, Wallet& wallet);
     static void listWalletInfo(string& walletName);
     static void writeTransactionInfo(string& walletName, map<string, vector<Transaction>> transactions, double newamount);
-    static void updateBalance(string& walletName, double newamount);
+    static void updateBalance(string& walletName, double newamount, string cardNum);
     static void FillInfoFromFile(string walletName, Wallet& wallet);
 };
 
@@ -270,11 +270,11 @@ void FileManager::writeTransactionInfo(string& walletName, map<string, vector<Tr
                 }
             }
         }
-        updateBalance(walletName, newamount);
+        //updateBalance(walletName, newamount, cardnum);
         file.close();
 }
 
-void FileManager::updateBalance(string& walletName, double newamount, string cardnum) {
+void FileManager::updateBalance(string& walletName, double newAmount, string cardNum) {
     fstream inFile;
     inFile.open(walletName + ".txt", ios::in);
     if (!inFile.is_open()) {
@@ -289,27 +289,31 @@ void FileManager::updateBalance(string& walletName, double newamount, string car
     }
     inFile.close();
 
-    fstream outFile(walletName + ".txt");
+    fstream outFile(walletName + ".txt", ios::out); 
+
     if (!outFile.is_open()) {
         cout << "Failed to open wallet file for writing: " << walletName + ".txt" << endl;
         return;
     }
 
     for (size_t i = 0; i < lines.size(); i++) {
-        if (lines[i].find(cardNum) != string::npos) {
-            if (lines[i].find("Balance") != string::npos) {
+        size_t cardPos = lines[i].find(cardNum);
+        if (cardPos != string::npos) { 
+            size_t balancePos = lines[i].find("Balance");
+            if (balancePos != string::npos) {
                 size_t colonPos = lines[i].find(":", balancePos);
                 if (colonPos != string::npos) {
                     string balanceStr = lines[i].substr(colonPos + 1);
-                    //double balance = stod(balanceStr);
-                    //balance = newAmount;
-                    lines[i] = lines[i].substr(0, colonPos + 1) + to_string(newAmount);
+                    double balance = stod(balanceStr);
+                    balance = newAmount;
+                    lines[i] = lines[i].substr(0, colonPos + 1) + to_string(balance);
                 }
             }
         }
+        outFile << lines[i] << endl;
+    }
     outFile.close();
 }
-
 void FileManager::FillInfoFromFile(string walletName, Wallet& wallet) {
     fstream file;
     file.open(walletName + ".txt", ios::in);
@@ -376,7 +380,7 @@ map<string, vector<Transaction>> Card::getTransactions() {
 
 void Card::withdraw(string category, double amount, string transactionDate) {
     if (balance >= amount) {
-        balance -= amount;
+        balance = balance - amount;
         transactions[category].push_back(Transaction(category, amount, transactionDate));
     }
     else {
@@ -385,7 +389,7 @@ void Card::withdraw(string category, double amount, string transactionDate) {
 }
 
 void Card::deposit(string walletName, double amount) {
-    balance += amount;
+    balance = balance + amount;
     //fileManager.updateBalance(walletName, balance);
 }
 
@@ -579,6 +583,7 @@ int main() {
             wallet.getCards().push_back(card);
             cout << "Card added successfully!" << endl;
             system("pause");
+            FileManager::writeWalletFile(walletName, wallet);
             break;
         case 2:
             cout << "You chose Option 2" << endl;
@@ -609,6 +614,7 @@ int main() {
                     cout << "Enter amount -> ";
                     cin >> amount;
                     wallet.getCardByIndex(cardchoice).deposit(walletName, amount);
+                    FileManager::writeWalletFile(walletName, wallet);
                     //wallet.getCardByIndex(cardchoice).setBalance(wallet.getCardByIndex(cardchoice).getBalance() + amount);
                     cout << "Successfull operation!" << endl;
                     //cout << "New balance: " << wallet.getCardByIndex(cardchoice).getBalance() << endl;
@@ -620,6 +626,7 @@ int main() {
                     cout << "Enter category - >";
                     getline(cin, category);
                     wallet.getCardByIndex(cardchoice).withdraw(category, amount, strDate);
+                    FileManager::writeWalletFile(walletName, wallet);
                     cout << "Successfull operation!" << endl;
                     break;
                 case 0:
